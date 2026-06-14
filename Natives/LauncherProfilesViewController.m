@@ -14,6 +14,7 @@
 #import "UIKit+hook.h"
 #import "installer/FabricInstallViewController.h"
 #import "installer/ForgeInstallViewController.h"
+#import "installer/OptiFineInstallViewController.h"
 #import "installer/ModpackInstallViewController.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
@@ -54,11 +55,11 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
                     @"name": @"",
                     @"lastVersionId": @"latest-release"}];
             }],
-#if 0 // TODO
         [UIAction
             actionWithTitle:@"OptiFine" image:nil
-            identifier:@"optifine" handler:createHandler],
-#endif
+            identifier:@"optifine" handler:^(UIAction *action) {
+                [self actionCreateOptiFineProfile];
+            }],
         [UIAction
             actionWithTitle:@"Fabric/Quilt" image:nil
             identifier:@"fabric_or_quilt" handler:^(UIAction *action) {
@@ -107,6 +108,11 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
 
 - (void)actionCreateForgeProfile {
     ForgeInstallViewController *vc = [ForgeInstallViewController new];
+    [self presentNavigatedViewController:vc];
+}
+
+- (void)actionCreateOptiFineProfile {
+    OptiFineInstallViewController *vc = [OptiFineInstallViewController new];
     [self presentNavigatedViewController:vc];
 }
 
