@@ -79,10 +79,10 @@ jobs:
         name: Amethyst
         path: Amethyst.ipa
 
-    # ========== 新增：发布到 GitHub Release ==========
-    # 仅在手动触发（workflow_dispatch）且提供了 version 输入时执行
+    # ========== 发布到 GitHub Release ==========
+    # 仅在手动触发（workflow_dispatch）且提供了版本号时执行
     - name: Create Release and upload assets
-      if: github.event_name == 'workflow_dispatch' && github.event.inputs.version != ''
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.version != '' && github.event.inputs.version != 'nightly'
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.event.inputs.version }}
