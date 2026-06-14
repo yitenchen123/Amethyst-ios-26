@@ -1,7 +1,16 @@
 name: Release build
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag (e.g. v1.2.3)'
+        required: true
+        default: 'nightly'
+
+# 赋予 GITHUB_TOKEN 创建 Release 和上传资产的权限
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -152,3 +161,15 @@ jobs:
         with:
           name: PojavLauncher.dSYM
           path: artifacts/PojavLauncher.dSYM
+
+      # ========== 新增：发布到 GitHub Release ==========
+      - name: Create Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
+          files: |
+            artifacts/*.ipa
+            artifacts/*.tipa
+            artifacts/PojavLauncher.dSYM
+          fail_on_unmatched_files: false
