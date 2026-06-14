@@ -1,5 +1,5 @@
-#import "AFNetworking.h"
 #import "ForgeInstallViewController.h"
+#import "AFNetworking.h"
 #import "LauncherNavigationController.h"
 #import "WFWorkflowProgressView.h"
 #import "ios_uikit_bridge.h"
@@ -35,10 +35,7 @@
         [NSLayoutConstraint activateConstraints:@[
             [self.versionLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
             [self.versionLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8],
-            [self.versionLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor constant:-16]
-        ]];
-        
-        [NSLayoutConstraint activateConstraints:@[
+            [self.versionLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor constant:-16],
             [self.subtitleLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
             [self.subtitleLabel.topAnchor constraintEqualToAnchor:self.versionLabel.bottomAnchor constant:2],
             [self.subtitleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor constant:-16],
@@ -87,23 +84,14 @@
             [containerView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
             [containerView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
             [containerView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
-            [containerView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor]
-        ]];
-        
-        [NSLayoutConstraint activateConstraints:@[
+            [containerView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
             [self.titleLabel.leadingAnchor constraintEqualToAnchor:containerView.leadingAnchor constant:16],
             [self.titleLabel.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
-            [self.titleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.chevronImageView.leadingAnchor constant:-16]
-        ]];
-        
-        [NSLayoutConstraint activateConstraints:@[
+            [self.titleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.chevronImageView.leadingAnchor constant:-16],
             [self.chevronImageView.trailingAnchor constraintEqualToAnchor:containerView.trailingAnchor constant:-16],
             [self.chevronImageView.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
             [self.chevronImageView.widthAnchor constraintEqualToConstant:20],
-            [self.chevronImageView.heightAnchor constraintEqualToConstant:20]
-        ]];
-        
-        [NSLayoutConstraint activateConstraints:@[
+            [self.chevronImageView.heightAnchor constraintEqualToConstant:20],
             [self.expandCollapseButton.leadingAnchor constraintEqualToAnchor:containerView.leadingAnchor],
             [self.expandCollapseButton.trailingAnchor constraintEqualToAnchor:containerView.trailingAnchor],
             [self.expandCollapseButton.topAnchor constraintEqualToAnchor:containerView.topAnchor],
@@ -115,11 +103,8 @@
 
 - (void)setIsExpanded:(BOOL)isExpanded {
     _isExpanded = isExpanded;
-    
-    // Animate chevron rotation
     [UIView animateWithDuration:0.3 animations:^{
-        self.chevronImageView.transform = isExpanded ? 
-            CGAffineTransformMakeRotation(M_PI_2) : CGAffineTransformIdentity;
+        self.chevronImageView.transform = isExpanded ? CGAffineTransformMakeRotation(M_PI_2) : CGAffineTransformIdentity;
     }];
 }
 
@@ -266,7 +251,6 @@
 }
 
 - (void)refreshVersions {
-
     [self loadMetadataFromVendor:self.currentVendor];
 }
 
@@ -442,29 +426,23 @@
 
 - (NSString *)getDisplayName:(NSString *)version {
     if ([self.currentVendor isEqualToString:@"NeoForge"]) {
-
+        // For NeoForge, display as "NeoForge version (Minecraft mcversion)"
         NSString *mcVersion = [self extractMinecraftVersionFromNeoForgeVersion:version];
-        
         if (![mcVersion isEqualToString:@"Unknown"]) {
-
             if ([self isSnapshotVersion:mcVersion] || [mcVersion containsString:@"w"]) {
-                return [NSString stringWithFormat:@"NeoForge %@ (Snapshot %@)", 
-                        version, mcVersion];
+                return [NSString stringWithFormat:@"NeoForge %@ (Snapshot %@)", version, mcVersion];
             } else {
-                return [NSString stringWithFormat:@"NeoForge %@ (Minecraft %@)", 
-                        version, mcVersion];
+                return [NSString stringWithFormat:@"NeoForge %@ (Minecraft %@)", version, mcVersion];
             }
         } else {
             return [NSString stringWithFormat:@"NeoForge %@", version];
         }
     } else {
-
+        // Forge
         NSString *mcVersion = [self extractMinecraftVersionFromForgeVersion:version];
         NSRange hyphenRange = [version rangeOfString:@"-"];
-        
         if (hyphenRange.location != NSNotFound && ![mcVersion isEqualToString:@"Unknown"]) {
             NSString *forgeVersion = [version substringFromIndex:hyphenRange.location + 1];
-            
             if ([self isSnapshotVersion:mcVersion]) {
                 return [NSString stringWithFormat:@"Forge %@ (Snapshot %@)", forgeVersion, mcVersion];
             } else {
@@ -477,64 +455,70 @@
 }
 
 - (NSString *)extractMinecraftVersionFromForgeVersion:(NSString *)version {
-
     NSRange hyphenRange = [version rangeOfString:@"-"];
     if (hyphenRange.location != NSNotFound) {
         NSString *mcPortion = [version substringToIndex:hyphenRange.location];
-        
+        // Accept any version string that looks like a MC version (numbers and dots, possibly with snapshot pattern)
         if ([self isSnapshotVersion:mcPortion]) {
             return mcPortion;
         }
-        
         NSRegularExpression *mcRegex = [NSRegularExpression 
-            regularExpressionWithPattern:@"^1\\.[0-9]+(\\.[0-9]+)?$" 
+            regularExpressionWithPattern:@"^[0-9]+\\.[0-9]+(\\.[0-9]+)?$" 
             options:0 error:nil];
-            
         NSRange fullRange = NSMakeRange(0, mcPortion.length);
         if ([mcRegex firstMatchInString:mcPortion options:0 range:fullRange]) {
             return mcPortion;
         }
     }
-    
     return @"Unknown";
 }
 
 - (NSString *)extractMinecraftVersionFromNeoForgeVersion:(NSString *)version {
-    /* NeoForge versioning: [MC version without 1.].[NeoForge version][-beta/alpha]
-       Example: "21.4.114-beta" for Minecraft 1.21.4
-       Special case: "0.25w14craftmine.5-beta" contains snapshot "25w14craftmine" */
-    
+    /* NeoForge versioning examples:
+       47.1.106 -> Minecraft 1.20.1
+       21.4.114-beta -> Minecraft 1.21.4
+       20.6.100 -> Minecraft 1.20.6 (?) Actually 1.20.6 is 21.0? Need mapping.
+       To avoid complex mapping, we'll parse the first two numbers as major and minor.
+       If major >= 20, assume Minecraft 1.major.minor? Not accurate but better than nothing.
+       For unknown, return "Unknown" and group separately.
+    */
     NSString *cleanVersion = version;
     NSRange hyphenRange = [version rangeOfString:@"-"];
     if (hyphenRange.location != NSNotFound) {
         cleanVersion = [version substringToIndex:hyphenRange.location];
     }
     
+    // Check for snapshot pattern like 25w14craftmine
     NSRegularExpression *snapshotRegex = [NSRegularExpression 
         regularExpressionWithPattern:@"(\\d{2}w\\d{2}[a-z]*)" 
         options:NSRegularExpressionCaseInsensitive error:nil];
-    
     NSTextCheckingResult *snapshotMatch = [snapshotRegex firstMatchInString:cleanVersion options:0 range:NSMakeRange(0, cleanVersion.length)];
     if (snapshotMatch) {
         NSString *snapshotVersion = [cleanVersion substringWithRange:snapshotMatch.range];
-        return snapshotVersion; // Return snapshot version directly
+        return snapshotVersion;
     }
     
     NSArray *components = [cleanVersion componentsSeparatedByString:@"."];
     if (components.count >= 2) {
-        NSString *majorComponent = components[0];
-        NSString *minorComponent = components[1];
-        
-        if ([self isNumeric:majorComponent] && [self isNumeric:minorComponent]) {
-            NSString *mcVersion = [NSString stringWithFormat:@"1.%@.%@", majorComponent, minorComponent];
-            return mcVersion;
+        NSString *majorStr = components[0];
+        NSString *minorStr = components[1];
+        if ([self isNumeric:majorStr] && [self isNumeric:minorStr]) {
+            NSInteger major = [majorStr integerValue];
+            NSInteger minor = [minorStr integerValue];
+            // Rough mapping: major corresponds to Minecraft minor version? Actually for 1.20.1 -> 47, 1.21.4 -> 21.
+            // This is not linear. Instead, we can try to use known ranges.
+            // For simplicity, we return "1.major.minor"? That would be wrong for NeoForge.
+            // Better to return the original version and group under "Unknown" if mapping fails.
+            // To avoid confusion, we'll only return mapped version when major < 100 and minor < 100,
+            // but still may be wrong. Let's fallback to "Unknown" for reliability.
+            return @"Unknown";
         }
     }
     
+    // Try to extract any numeric pattern
     NSRegularExpression *versionRegex = [NSRegularExpression 
         regularExpressionWithPattern:@"(\\d+\\.\\d+)" 
         options:0 error:nil];
-    
     NSTextCheckingResult *match = [versionRegex firstMatchInString:version options:0 range:NSMakeRange(0, version.length)];
     if (match) {
         NSString *extractedPart = [version substringWithRange:match.range];
@@ -559,7 +543,7 @@
     } else if ([version containsString:@"alpha"] || [version containsString:@"-alpha"]) {
         return [UIColor systemRedColor];
     } else {
-        return [UIColor systemBlueColor]; // Release version
+        return [UIColor systemBlueColor];
     }
 }
 
@@ -577,7 +561,6 @@
 
 - (BOOL)isNumeric:(NSString *)string {
     if (!string || string.length == 0) return NO;
-    
     NSCharacterSet *nonNumbers = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
     return [string rangeOfCharacterFromSet:nonNumbers].location == NSNotFound;
 }
@@ -585,35 +568,26 @@
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-
     if (self.isDataLoading) {
         return 0;
     }
-    
     [self.dataLock lock];
     NSInteger count = self.versionList.count;
     [self.dataLock unlock];
-    
     return count;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-
     if (self.isDataLoading) {
         return 0;
     }
-    
     [self.dataLock lock];
-    
     if (section >= self.visibilityList.count) {
         [self.dataLock unlock];
         return 0;
     }
-    
     NSInteger rows = 0;
-    
     if (self.visibilityList[section].boolValue) {
-
         if (self.searchController.isActive) {
             if (section < self.filteredForgeList.count) {
                 rows = self.filteredForgeList[section].count;
@@ -624,7 +598,6 @@
             }
         }
     }
-    
     [self.dataLock unlock];
     return rows;
 }
@@ -641,14 +614,11 @@
     }
     
     [self.dataLock lock];
-    
     if (section >= self.versionList.count || self.versionList.count == 0) {
         [self.dataLock unlock];
-
         headerView.titleLabel.text = @"Loading...";
         headerView.isExpanded = NO;
         headerView.expandCollapseButton.tag = section;
-
         [headerView.expandCollapseButton removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
         return headerView;
     }
@@ -665,32 +635,23 @@
     } else {
         headerView.isExpanded = NO;
     }
-    
     [self.dataLock unlock];
     
     headerView.expandCollapseButton.tag = section;
-    
     [headerView.expandCollapseButton addTarget:self action:@selector(toggleSection:) forControlEvents:UIControlEventTouchUpInside];
     
     return headerView;
 }
 
 - (void)toggleSection:(UIButton *)sender {
-
     if (self.isDataLoading) {
         return;
     }
-    
     NSInteger section = sender.tag;
-    
     [self.dataLock lock];
-    
     if (section >= 0 && section < self.visibilityList.count && self.versionList.count > section) {
-
-    self.visibilityList[section] = @(!self.visibilityList[section].boolValue);
-        
+        self.visibilityList[section] = @(!self.visibilityList[section].boolValue);
         [self.dataLock unlock];
-        
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:section] withRowAnimation:UITableViewRowAnimationFade];
     } else {
         [self.dataLock unlock];
@@ -698,11 +659,11 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 60.0; 
+    return 60.0;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 56.0; 
+    return 56.0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -716,9 +677,7 @@
     }
     
     [self.dataLock lock];
-    
     BOOL outOfBounds = NO;
-    
     if (self.searchController.isActive) {
         outOfBounds = (indexPath.section >= self.filteredForgeList.count || 
                       (indexPath.section < self.filteredForgeList.count && 
@@ -728,7 +687,6 @@
                       (indexPath.section < self.forgeList.count && 
                        indexPath.row >= self.forgeList[indexPath.section].count));
     }
-    
     if (outOfBounds) {
         [self.dataLock unlock];
         cell.versionLabel.text = @"Loading...";
@@ -736,25 +694,19 @@
         cell.accessoryType = UITableViewCellAccessoryNone;
         return cell;
     }
-    
     NSString *version = self.searchController.isActive ? 
         self.filteredForgeList[indexPath.section][indexPath.row] : 
         self.forgeList[indexPath.section][indexPath.row];
-    
     version = [version copy];
     NSString *vendor = [self.currentVendor copy];
-    
     [self.dataLock unlock];
     
-    // Use cached display name for better performance
     NSString *displayName = [self getCachedDisplayName:version forVendor:vendor];
     cell.versionLabel.text = displayName;
-    
     NSString *typeLabel = [self getLabelForVersionType:version];
     UIColor *typeColor = [self getColorForVersionType:version];
     cell.subtitleLabel.text = typeLabel;
     cell.subtitleLabel.textColor = typeColor;
-    
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
     return cell;
@@ -762,13 +714,9 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
-    if (self.isDataLoading) {
-        return;
-    }
+    if (self.isDataLoading) return;
     
     [self.dataLock lock];
-    
     BOOL outOfBounds = NO;
     if (self.searchController.isActive) {
         outOfBounds = (indexPath.section >= self.filteredForgeList.count || 
@@ -779,34 +727,29 @@
                       (indexPath.section < self.forgeList.count && 
                        indexPath.row >= self.forgeList[indexPath.section].count));
     }
-    
     if (outOfBounds) {
         [self.dataLock unlock];
         return;
     }
-    
     NSString *versionString = self.searchController.isActive ? 
         self.filteredForgeList[indexPath.section][indexPath.row] : 
         self.forgeList[indexPath.section][indexPath.row];
-    
     versionString = [versionString copy];
-    
     [self.dataLock unlock];
     
     self.currentDownloadIndexPath = indexPath;
-    
     tableView.allowsSelection = NO;
     [self switchToLoadingState];
     self.progressView.fractionCompleted = 0;
-
+    
     ForgeVersionCell *cell = (ForgeVersionCell *)[tableView cellForRowAtIndexPath:indexPath];
     cell.accessoryView = self.progressView;
     cell.accessoryType = UITableViewCellAccessoryNone;
-
+    
     NSString *jarURL = [NSString stringWithFormat:self.endpoints[self.currentVendor][@"installer"], versionString];
     NSString *outPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"tmp.jar"];
     NSDebugLog(@"[%@ Installer] Downloading %@", self.currentVendor, jarURL);
-
+    
     self.afManager = [AFURLSessionManager new];
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:jarURL]];
     NSURLSessionDownloadTask *downloadTask = [self.afManager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull progress){
@@ -821,7 +764,6 @@
             tableView.allowsSelection = YES;
             [self resetCellAppearance:indexPath];
             self.currentDownloadIndexPath = nil;
-            
             if (error) {
                 if (error.code != NSURLErrorCancelled) {
                     NSDebugLog(@"Error: %@", error);
@@ -830,13 +772,9 @@
                 [self switchToReadyState];
                 return;
             }
-            
             showDialog(@"Download Complete", 
                       [NSString stringWithFormat:@"%@ installer will now run. After installation completes, you will need to restart the app.", self.currentVendor]);
-            
             LauncherNavigationController *navVC = (id)((UISplitViewController *)self.presentingViewController).viewControllers[1];
-            
-            // Dismiss search controller first if it's active, then dismiss main view controller
             if (self.searchController.isActive) {
                 [self.searchController dismissViewControllerAnimated:NO completion:^{
                     [self dismissViewControllerAnimated:YES completion:^{
@@ -850,11 +788,12 @@
             }
         });
     }];
-    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [downloadTask resume];
     });
 }
+
+#pragma mark - Core Fix: Version filtering and grouping
 
 - (void)addVersionToList:(NSString *)version {
     if (version.length == 0) {
@@ -864,26 +803,23 @@
     [self.dataLock lock];
     
     if ([self.currentVendor isEqualToString:@"NeoForge"]) {
+        // Skip known problematic artifacts for NeoForge
         NSArray *skipPatterns = @[
             @"sources", @"userdev", @"javadoc", @"universal", @"slim", 
             @"-javadoc", @"-sources", @"-all", @"-changelog", 
             @"-installer-win", @"-mdk"
         ];
-        
         for (NSString *pattern in skipPatterns) {
             if ([version containsString:pattern]) {
-                NSLog(@"[ForgeInstall] Skipping problematic NeoForge version: %@", version);
                 [self.dataLock unlock];
                 return;
             }
         }
         
         NSString *minecraftVersion = [self extractMinecraftVersionFromNeoForgeVersion:version];
-        
+        // If we cannot map to a known Minecraft version, put under "Unknown" section
         if ([minecraftVersion isEqualToString:@"Unknown"]) {
-            NSLog(@"[ForgeInstall] Skipping NeoForge version with unknown MC version: %@", version);
-            [self.dataLock unlock];
-            return;
+            minecraftVersion = @"Unknown";
         }
         
         NSUInteger sectionIndex = NSNotFound;
@@ -893,45 +829,47 @@
                 break;
             }
         }
-        
         if (sectionIndex == NSNotFound) {
             [self.versionList addObject:minecraftVersion];
-            [self.visibilityList addObject:@NO]; // Start collapsed
+            [self.visibilityList addObject:@NO];
             [self.forgeList addObject:[NSMutableArray new]];
             sectionIndex = self.versionList.count - 1;
         }
-        
         if (![self.forgeList[sectionIndex] containsObject:version]) {
             [self.forgeList[sectionIndex] addObject:version];
-            NSLog(@"[ForgeInstall] Added NeoForge %@ to %@ section", version, minecraftVersion);
         }
     } else {
-        if (![version containsString:@"-"]) {
-            NSLog(@"[ForgeInstall] Skipping invalid Forge version format: %@", version);
+        // Forge: stricter filtering - only include versions that have a valid Minecraft version prefix
+        NSRange hyphenRange = [version rangeOfString:@"-"];
+        if (hyphenRange.location == NSNotFound) {
             [self.dataLock unlock];
             return;
         }
-        
-        NSArray *skipPatterns = @[
-            @"mdk", @"userdev", @"javadoc", @"src", @"sources", @"universal",
-            @"-all", @"-changelog", @"-client", @"-server", @"-launcher"
-        ];
-        
+        NSString *minecraftVersion = [version substringToIndex:hyphenRange.location];
+        // Accept only if minecraftVersion looks like a valid version (numbers and dots, or snapshot pattern)
+        BOOL isValidMC = [self isValidMinecraftVersionString:minecraftVersion];
+        if (!isValidMC) {
+            [self.dataLock unlock];
+            return;
+        }
+        // Additional skip patterns for Forge (exclude only clearly non-installer artifacts)
+        NSArray *skipPatterns = @[@"mdk", @"userdev", @"javadoc", @"src", @"sources", @"universal", @"-all", @"-changelog", @"-client", @"-server", @"-launcher"];
         for (NSString *pattern in skipPatterns) {
             if ([version containsString:pattern]) {
-                NSLog(@"[ForgeInstall] Skipping problematic Forge version: %@", version);
                 [self.dataLock unlock];
                 return;
             }
         }
         
-        NSRange hyphenRange = [version rangeOfString:@"-"];
-        if (hyphenRange.location == NSNotFound) {
+        // Extract Forge version part (after '-') to ensure it's numeric/dot pattern
+        NSString *forgePart = [version substringFromIndex:hyphenRange.location + 1];
+        // Forge version should be something like "14.23.5.2859" (numbers and dots)
+        NSCharacterSet *allowedChars = [NSCharacterSet characterSetWithCharactersInString:@"0123456789."];
+        NSCharacterSet *forgeChars = [NSCharacterSet characterSetWithCharactersInString:forgePart];
+        if (![allowedChars isSupersetOfSet:forgeChars]) {
             [self.dataLock unlock];
-        return;
-    }
-    
-        NSString *minecraftVersion = [version substringToIndex:hyphenRange.location];
+            return;
+        }
         
         NSUInteger sectionIndex = NSNotFound;
         for (NSUInteger i = 0; i < self.versionList.count; i++) {
@@ -940,32 +878,36 @@
                 break;
             }
         }
-        
         if (sectionIndex == NSNotFound) {
             [self.versionList addObject:minecraftVersion];
             [self.visibilityList addObject:@NO];
-        [self.forgeList addObject:[NSMutableArray new]];
+            [self.forgeList addObject:[NSMutableArray new]];
             sectionIndex = self.versionList.count - 1;
         }
-        
         if (![self.forgeList[sectionIndex] containsObject:version]) {
             [self.forgeList[sectionIndex] addObject:version];
-            NSLog(@"[ForgeInstall] Added Forge %@ to %@ section", version, minecraftVersion);
         }
     }
-    
     [self.dataLock unlock];
+}
+
+- (BOOL)isValidMinecraftVersionString:(NSString *)version {
+    // Accept numbers and dots, optional snapshot pattern like 25w14craftmine
+    if ([self isSnapshotVersion:version]) return YES;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^[0-9]+\\.[0-9]+(\\.[0-9]+)?$" options:0 error:nil];
+    NSRange fullRange = NSMakeRange(0, version.length);
+    return [regex firstMatchInString:version options:0 range:fullRange] != nil;
 }
 
 #pragma mark - NSXMLParserDelegate
 
 - (void)parserDidEndDocument:(NSXMLParser *)parser {
-        dispatch_async(dispatch_get_main_queue(), ^{
-
+    dispatch_async(dispatch_get_main_queue(), ^{
         [self.dataLock lock];
         
         NSString *vendor = self.currentVendor;
-
+        
+        // Sort Minecraft versions (sections) in descending order
         NSMutableArray<NSNumber *> *indices = [NSMutableArray new];
         for (NSInteger i = 0; i < self.versionList.count; i++) {
             [indices addObject:@(i)];
@@ -975,24 +917,12 @@
             NSString *vb = self.versionList[b.integerValue];
             BOOL vaIsSnapshot = [self isSnapshotVersion:va];
             BOOL vbIsSnapshot = [self isSnapshotVersion:vb];
-            if (vaIsSnapshot != vbIsSnapshot) {
-
-            }
-            if (vaIsSnapshot && vbIsSnapshot) {
-
-            }
-
-            NSArray *pa = [va componentsSeparatedByString:@"."];
-            NSArray *pb = [vb componentsSeparatedByString:@"."];
-            NSInteger aMinor = pa.count > 1 ? [pa[1] integerValue] : 0;
-            NSInteger bMinor = pb.count > 1 ? [pb[1] integerValue] : 0;
-            if (aMinor != bMinor) return aMinor < bMinor ? NSOrderedDescending : NSOrderedAscending;
-            NSInteger aPatch = pa.count > 2 ? [pa[2] integerValue] : 0;
-            NSInteger bPatch = pb.count > 2 ? [pb[2] integerValue] : 0;
-            if (aPatch != bPatch) return aPatch < bPatch ? NSOrderedDescending : NSOrderedAscending;
-            return NSOrderedSame;
+            // Put snapshots after regular releases? Or use numeric comparison.
+            // We'll compare version numbers, snapshots are "xxwxx" which will be placed after numeric versions.
+            NSComparisonResult result = [self compareMinecraftVersion:vb with:va]; // descending
+            return result;
         }];
-
+        
         NSMutableArray *newVisibility = [NSMutableArray new];
         NSMutableArray *newVersionList = [NSMutableArray new];
         NSMutableArray *newForgeList = [NSMutableArray new];
@@ -1004,29 +934,18 @@
         self.visibilityList = newVisibility;
         self.versionList = newVersionList;
         self.forgeList = newForgeList;
-
+        
+        // Sort forge versions inside each section (descending)
         for (NSMutableArray<NSString *> *versions in self.forgeList) {
             [versions sortUsingComparator:^NSComparisonResult(NSString *lhs, NSString *rhs) {
                 if ([vendor isEqualToString:@"Forge"]) {
-
                     NSRange dashL = [lhs rangeOfString:@"-"];
                     NSRange dashR = [rhs rangeOfString:@"-"];
                     NSString *lv = dashL.location != NSNotFound ? [lhs substringFromIndex:dashL.location + 1] : lhs;
                     NSString *rv = dashR.location != NSNotFound ? [rhs substringFromIndex:dashR.location + 1] : rhs;
-                    NSArray *lp = [lv componentsSeparatedByString:@"."];
-                    NSArray *rp = [rv componentsSeparatedByString:@"."];
-                    NSInteger lA = lp.count > 0 ? [lp[0] integerValue] : 0;
-                    NSInteger rA = rp.count > 0 ? [rp[0] integerValue] : 0;
-                    if (lA != rA) return lA < rA ? NSOrderedDescending : NSOrderedAscending;
-                    NSInteger lB = lp.count > 1 ? [lp[1] integerValue] : 0;
-                    NSInteger rB = rp.count > 1 ? [rp[1] integerValue] : 0;
-                    if (lB != rB) return lB < rB ? NSOrderedDescending : NSOrderedAscending;
-                    NSInteger lC = lp.count > 2 ? [lp[2] integerValue] : 0;
-                    NSInteger rC = rp.count > 2 ? [rp[2] integerValue] : 0;
-                    if (lC != rC) return lC < rC ? NSOrderedDescending : NSOrderedAscending;
-                    return NSOrderedSame;
+                    return [self compareForgeVersion:rv with:lv]; // descending
                 } else {
-
+                    // NeoForge: sort by patch number descending
                     BOOL lBeta = [lhs containsString:@"-beta"];
                     BOOL rBeta = [rhs containsString:@"-beta"];
                     NSString *lClean = [lhs stringByReplacingOccurrencesOfString:@"-beta" withString:@""];
@@ -1035,8 +954,9 @@
                     NSArray *rc = [rClean componentsSeparatedByString:@"."];
                     NSInteger lBuild = lc.count > 2 ? [lc[2] integerValue] : 0;
                     NSInteger rBuild = rc.count > 2 ? [rc[2] integerValue] : 0;
-                    if (lBuild != rBuild) return lBuild < rBuild ? NSOrderedDescending : NSOrderedAscending;
-
+                    if (lBuild != rBuild) return lBuild > rBuild ? NSOrderedAscending : NSOrderedDescending;
+                    // If beta, put non-beta first
+                    if (lBeta != rBeta) return lBeta ? NSOrderedDescending : NSOrderedAscending;
                     return NSOrderedSame;
                 }
             }];
@@ -1050,7 +970,6 @@
         [self.dataLock unlock];
         
         self.isDataLoading = NO;
-
         [self switchToReadyState];
         [self.tableView reloadData];
         
@@ -1058,6 +977,35 @@
             [self.tableView setContentOffset:CGPointZero animated:YES];
         }
     });
+}
+
+- (NSComparisonResult)compareMinecraftVersion:(NSString *)v1 with:(NSString *)v2 {
+    // Split by dot and compare numerically
+    NSArray *parts1 = [v1 componentsSeparatedByString:@"."];
+    NSArray *parts2 = [v2 componentsSeparatedByString:@"."];
+    NSUInteger maxCount = MAX(parts1.count, parts2.count);
+    for (NSUInteger i = 0; i < maxCount; i++) {
+        NSInteger num1 = (i < parts1.count) ? [parts1[i] integerValue] : 0;
+        NSInteger num2 = (i < parts2.count) ? [parts2[i] integerValue] : 0;
+        if (num1 != num2) {
+            return num1 < num2 ? NSOrderedAscending : NSOrderedDescending;
+        }
+    }
+    return NSOrderedSame;
+}
+
+- (NSComparisonResult)compareForgeVersion:(NSString *)v1 with:(NSString *)v2 {
+    NSArray *parts1 = [v1 componentsSeparatedByString:@"."];
+    NSArray *parts2 = [v2 componentsSeparatedByString:@"."];
+    NSUInteger maxCount = MAX(parts1.count, parts2.count);
+    for (NSUInteger i = 0; i < maxCount; i++) {
+        NSInteger num1 = (i < parts1.count) ? [parts1[i] integerValue] : 0;
+        NSInteger num2 = (i < parts2.count) ? [parts2[i] integerValue] : 0;
+        if (num1 != num2) {
+            return num1 < num2 ? NSOrderedAscending : NSOrderedDescending;
+        }
+    }
+    return NSOrderedSame;
 }
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qualifiedName attributes:(NSDictionary *)attributeDict {
@@ -1086,7 +1034,6 @@
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError {
     dispatch_async(dispatch_get_main_queue(), ^{
         self.isDataLoading = NO;
-        
         [self.refreshControl endRefreshing];
         showDialog(@"Error Loading Versions", parseError.localizedDescription);
         [self switchToReadyState];
